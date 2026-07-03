@@ -696,6 +696,4 @@ export default function TapUCApp() {
                   style={{ background: gradient }}
                 >
                   <Copy size={16} />
-                  {copied ? "Nusxalandi!" : "Havolani nusxalash"}
-                </button>
-  
+                  {copied ? "Nusxalandi!" : "Havolani nusx
