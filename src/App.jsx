@@ -696,4 +696,285 @@ export default function TapUCApp() {
                   style={{ background: gradient }}
                 >
                   <Copy size={16} />
-                  {copied ? "Nusxalandi!" : "Havolani nusx
+                  {copied ? "Nusxalandi!" : "Havolani nusxalash"}
+                  </button>
+
+                <div className="mt-3 text-sm" style={{ color: C.navy }}>
+                  Taklif qilgan do'stlar:{" "}
+                  <span style={{ fontWeight: 800 }}>{referralCount}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TASKS */}
+          {tab === "tasks" && (
+            <div className="space-y-3">
+              {tasks.map((task) => {
+                const done = state.completedTasks.includes(task.id);
+
+                return (
+                  <div
+                    key={task.id}
+                    className="p-4 flex items-center justify-between gap-3"
+                    style={cardStyle}
+                  >
+                    <div className="min-w-0">
+                      <div
+                        className="text-sm font-bold truncate"
+                        style={{ color: C.navy }}
+                      >
+                        {task.title}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {task.desc}
+                      </div>
+                      <div className="text-xs mt-1" style={{ color: C.orange, fontWeight: 800 }}>
+                        +{task.bonus} ball
+                      </div>
+                    </div>
+
+                    {done ? (
+                      <div className="flex items-center gap-1 text-emerald-600 font-bold text-sm shrink-0">
+                        <CheckCircle2 size={18} />
+                        Bajarilgan
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2 shrink-0">
+                        <a
+                          href={task.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs px-3 py-2 font-bold rounded-lg text-white text-center"
+                          style={{ background: gradient }}
+                        >
+                          O‘tish
+                        </a>
+                        <button
+                          onClick={() => completeTask(task)}
+                          className="text-xs px-3 py-2 font-bold rounded-lg border"
+                          style={{
+                            borderColor: C.orange,
+                            color: C.orange,
+                            background: "#fff",
+                          }}
+                        >
+                          Tekshirish
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {isAdmin && (
+                <div className="p-4 mt-4" style={cardStyle}>
+                  <div
+                    className="flex items-center gap-2 mb-3"
+                    style={{ color: C.navy, fontWeight: 800 }}
+                  >
+                    <Settings size={18} color={C.orange} />
+                    Vazifa qo'shish (Admin)
+                  </div>
+
+                  <input
+                    type="text"
+                    placeholder="Vazifa nomi"
+                    value={newTask.title}
+                    onChange={(e) =>
+                      setNewTask((s) => ({ ...s, title: e.target.value }))
+                    }
+                    style={inputStyle}
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="@kanal_username"
+                    value={newTask.channelUsername}
+                    onChange={(e) =>
+                      setNewTask((s) => ({
+                        ...s,
+                        channelUsername: e.target.value,
+                      }))
+                    }
+                    style={inputStyle}
+                  />
+
+                  <input
+                    type="number"
+                    placeholder="Bonus ball"
+                    value={newTask.bonus}
+                    onChange={(e) =>
+                      setNewTask((s) => ({ ...s, bonus: e.target.value }))
+                    }
+                    style={inputStyle}
+                  />
+
+                  <button
+                    onClick={addChannelTask}
+                    className="w-full mt-3 py-2 text-sm font-bold rounded-xl text-white flex items-center justify-center gap-2"
+                    style={{ background: gradient }}
+                  >
+                    <Plus size={16} />
+                    Vazifa qo'shish
+                  </button>
+
+                  <div className="mt-4 space-y-2">
+                    {tasks.map((task) => (
+                      <div
+                        key={task.id + "_admin"}
+                        className="flex items-center justify-between gap-2 bg-gray-50 rounded-xl p-2"
+                      >
+                        <div className="text-xs min-w-0">
+                          <div className="font-bold truncate">{task.title}</div>
+                          <div className="text-gray-400 truncate">{task.channel}</div>
+                        </div>
+                        <button
+                          onClick={() => removeTask(task.id)}
+                          className="p-2 rounded-lg"
+                          style={{ color: "#EF4444" }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* WALLET */}
+          {tab === "wallet" && (
+            <div className="space-y-4">
+              <div className="p-4" style={cardStyle}>
+                <div className="text-sm font-bold mb-3" style={{ color: C.navy }}>
+                  UC yechib olish
+                </div>
+
+                <input
+                  type="text"
+                  placeholder="PUBG ID kiriting"
+                  value={ucId}
+                  onChange={(e) => setUcId(e.target.value)}
+                  style={inputStyle}
+                />
+
+                <input
+                  type="number"
+                  placeholder="Yechiladigan ball miqdori"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  style={inputStyle}
+                />
+
+                {liveUC > 0 && (
+                  <div className="text-xs font-bold text-emerald-600 mt-2">
+                    Siz olasiz: {liveUC} UC
+                  </div>
+                )}
+
+                <button
+                  onClick={submitWithdraw}
+                  className="w-full mt-3 py-2.5 text-sm font-bold rounded-xl text-white flex items-center justify-center gap-2"
+                  style={{ background: gradient }}
+                >
+                  <Send size={16} />
+                  So'rov yuborish
+                </button>
+              </div>
+
+              <div className="p-4" style={cardStyle}>
+                <div
+                  className="flex items-center gap-2 mb-3"
+                  style={{ color: C.navy, fontWeight: 800 }}
+                >
+                  <Clock size={18} color={C.orange} />
+                  Yechish tarixi
+                </div>
+
+                {state.withdrawals.length === 0 ? (
+                  <div className="text-sm text-gray-400">
+                    Hali yechish so'rovlari yo'q
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {state.withdrawals.map((item) => (
+                      <div
+                        key={item.id}
+                        className="rounded-xl p-3 border"
+                        style={{ borderColor: "#E2E8F0" }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div
+                            className="text-sm font-bold"
+                            style={{ color: C.navy }}
+                          >
+                            {item.ball} ball → {item.uc} UC
+                          </div>
+                          <div
+                            className="text-xs px-2 py-1 rounded-full"
+                            style={{
+                              backgroundColor: "#FEF3C7",
+                              color: "#92400E",
+                              fontWeight: 700,
+                            }}
+                          >
+                            {item.status}
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          PUBG ID: {item.ucId}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {item.date}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* bottom nav */}
+        <div
+          className="fixed bottom-0 left-0 right-0 max-w-sm mx-auto border-t px-2 py-2 flex items-center"
+          style={{
+            backgroundColor: "#fff",
+            borderColor: "#F1F5F9",
+            borderTopLeftRadius: 18,
+            borderTopRightRadius: 18,
+            boxShadow: "0 -4px 20px rgba(0,0,0,0.06)",
+          }}
+        >
+          <NavButton
+            active={tab === "home"}
+            onClick={() => setTab("home")}
+            icon={<Home size={20} />}
+            label="Asosiy"
+          />
+          <NavButton
+            active={tab === "referal"}
+            onClick={() => setTab("referal")}
+            icon={<Users size={20} />}
+            label="Referal"
+          />
+          <NavButton
+            active={tab === "tasks"}
+            onClick={() => setTab("tasks")}
+            icon={<ClipboardList size={20} />}
+            label="Vazifalar"
+          />
+          <NavButton
+            active={tab === "wallet"}
+            onClick={() => setTab("wallet")}
+            icon={<Wallet size={20} />}
+            label="Hamyon"
+          />
+        </div>
+      </div>
+    </div>
+  );
+                }
