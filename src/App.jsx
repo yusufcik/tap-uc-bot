@@ -17,15 +17,15 @@ import {
 /* ============================================================
    SOZLAMALAR
 ============================================================ */
-const BOT_TOKEN = ""; // BotFather token: "123456:AA..."
-const BOT_USERNAME = "TapUcBot"; // @ belgisisiz
-const ADMIN_CHAT_ID = ""; // admin telegram ID
-const CHANNEL_USERNAME = "@your_channel"; // default vazifa uchun kanal
+const BOT_TOKEN = "8790946212:AAGDGFUHWaj_iFiwZ8xRIlTV-3t9qnLlbDE"; // BotFather token: "123456:AA..."
+const BOT_USERNAME = "Tapucrobot"; // @ belgisisiz
+const ADMIN_CHAT_ID = "7060092076"; // admin telegram ID
+const CHANNEL_USERNAME = "@tapuckanal"; // default vazifa uchun kanal
 
 const DAILY_LIMIT = 200;
 const REFERRAL_BONUS = 50;
-const SIGNUP_BONUS = 20;
-const TASK_BONUS = 30;
+const SIGNUP_BONUS = 50;
+const TASK_BONUS = 50;
 
 const STORAGE_KEY = "tapuc:state";
 const TASKS_STORAGE_KEY = "tapuc:tasks";
