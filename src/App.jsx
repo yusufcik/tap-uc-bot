@@ -17,15 +17,15 @@ import {
 /* ============================================================
    SOZLAMALAR
 ============================================================ */
-const BOT_TOKEN = "shu8790946212:AAGDGFUHWaj_iFiwZ8xRIlTV-3t9qnLlbDE"; // BotFather token
-const BOT_USERNAME = "Tapucrobot"; // @ belgisisiz
-const ADMIN_CHAT_ID = "7060092076"; // admin telegram id
-const CHANNEL_USERNAME = "@tapuckanal"; // default kanal
+const BOT_TOKEN = ""; // BotFather token: "123456:AA..."
+const BOT_USERNAME = "TapUcBot"; // @ belgisisiz
+const ADMIN_CHAT_ID = ""; // admin telegram ID
+const CHANNEL_USERNAME = "@your_channel"; // default vazifa uchun kanal
 
 const DAILY_LIMIT = 200;
 const REFERRAL_BONUS = 50;
-const SIGNUP_BONUS = 50;
-const TASK_BONUS = 50;
+const SIGNUP_BONUS = 20;
+const TASK_BONUS = 30;
 
 const STORAGE_KEY = "tapuc:state";
 const TASKS_STORAGE_KEY = "tapuc:tasks";
@@ -183,7 +183,7 @@ export default function TapUCApp() {
     }, 2500);
   };
 
-  /* ---------- Telegram / guest ---------- */
+  /* ---------- Telegram / guest user ---------- */
   useEffect(() => {
     const tg = getTelegram();
     tg?.ready?.();
@@ -208,7 +208,7 @@ export default function TapUCApp() {
     setMyName("Mehmon");
   }, []);
 
-  /* ---------- load state ---------- */
+  /* ---------- load user state ---------- */
   useEffect(() => {
     const parsed = loadLS(STORAGE_KEY, null);
 
@@ -248,7 +248,7 @@ export default function TapUCApp() {
     saveLS(TASKS_STORAGE_KEY, next);
   };
 
-  /* ---------- referral apply ---------- */
+  /* ---------- referral apply on first join ---------- */
   useEffect(() => {
     if (!loaded || !myId || state.refApplied) return;
 
@@ -325,7 +325,7 @@ export default function TapUCApp() {
     }));
   };
 
-  /* ---------- notify admin ---------- */
+  /* ---------- telegram notify admin ---------- */
   const notifyAdmin = async (request) => {
     if (!BOT_TOKEN || BOT_TOKEN === "TOKEN_HERE" || !ADMIN_CHAT_ID) return;
 
@@ -392,7 +392,7 @@ export default function TapUCApp() {
     showNotice("success", `So'rov yuborildi: ${val} ball → ${uc} UC`);
   };
 
-  /* ---------- complete task ---------- */
+  /* ---------- task complete ---------- */
   const completeTask = async (task) => {
     if (state.completedTasks.includes(task.id)) return;
 
@@ -436,7 +436,7 @@ export default function TapUCApp() {
     showNotice("success", `+${task.bonus} ball qo'shildi!`);
   };
 
-  /* ---------- copy referral ---------- */
+  /* ---------- referral copy ---------- */
   const copyReferralLink = async () => {
     if (!myId) return;
 
@@ -484,6 +484,7 @@ export default function TapUCApp() {
     showNotice("success", "Vazifa o'chirildi");
   };
 
+  /* ---------- derived ---------- */
   const tapProgress = Math.min(100, (state.dailyTaps / DAILY_LIMIT) * 100);
   const liveUC = amount ? estimateUC(parseInt(amount, 10) || 0) : 0;
   const referralLink = myId
@@ -575,7 +576,8 @@ export default function TapUCApp() {
         )}
 
         {/* content */}
-        <div className="px-4 pt-2 pb-24" style={{ minHeight: 500 }}>{/* HOME */}
+        <div className="px-4 pt-2 pb-24" style={{ minHeight: 500 }}>
+          {/* HOME */}
           {tab === "home" && (
             <>
               <div className="py-5 text-center mb-6" style={cardStyle}>
@@ -665,7 +667,6 @@ export default function TapUCApp() {
               </div>
             </>
           )}
-
           {/* REFERAL */}
           {tab === "referal" && (
             <div className="space-y-4">
@@ -700,18 +701,24 @@ export default function TapUCApp() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 text-center" style={cardStyle}>
                   <div className="text-xs text-gray-400 font-bold uppercase">
-                    Takliflar soni
+                    Takliflar
                   </div>
-                  <div className="text-2xl mt-1" style={{ color: C.navy, fontWeight: 900 }}>
+                  <div
+                    className="text-2xl mt-1"
+                    style={{ color: C.navy, fontWeight: 900 }}
+                  >
                     {referralCount}
                   </div>
                 </div>
 
                 <div className="p-4 text-center" style={cardStyle}>
                   <div className="text-xs text-gray-400 font-bold uppercase">
-                    Ishlangan bonus
+                    Bonus
                   </div>
-                  <div className="text-2xl mt-1" style={{ color: C.orange, fontWeight: 900 }}>
+                  <div
+                    className="text-2xl mt-1"
+                    style={{ color: C.orange, fontWeight: 900 }}
+                  >
                     {referralCount * REFERRAL_BONUS}
                   </div>
                 </div>
@@ -741,7 +748,10 @@ export default function TapUCApp() {
                       <div className="text-xs" style={{ color: "#94A3B8" }}>
                         {task.desc}
                       </div>
-                      <div className="text-xs mt-0.5" style={{ color: C.orangeDark, fontWeight: 800 }}>
+                      <div
+                        className="text-xs mt-0.5"
+                        style={{ color: C.orangeDark, fontWeight: 800 }}
+                      >
                         +{task.bonus} ball
                       </div>
                     </div>
@@ -767,7 +777,6 @@ export default function TapUCApp() {
                         >
                           O'tish
                         </a>
-
                         <button
                           onClick={() => completeTask(task)}
                           className="px-2.5 py-1.5"
@@ -888,8 +897,10 @@ export default function TapUCApp() {
                             ID: {w.ucId}
                           </div>
                         </div>
-
-                        <div className="flex items-center gap-1 text-xs font-bold" style={{ color: "#F59E0B" }}>
+                        <div
+                          className="flex items-center gap-1 text-xs font-bold"
+                          style={{ color: "#F59E0B" }}
+                        >
                           <Clock size={13} />
                           {w.status}
                         </div>
@@ -1019,7 +1030,7 @@ export default function TapUCApp() {
           )}
         </div>
 
-        {/* bottom nav */}
+        {/* Bottom nav */}
         <div
           className="fixed bottom-0 left-0 right-0 max-w-sm mx-auto px-2 py-2 flex justify-around border-t"
           style={{ backgroundColor: C.card, borderColor: "#F1F5F9" }}
@@ -1052,4 +1063,4 @@ export default function TapUCApp() {
       </div>
     </div>
   );
-                  }
+}
