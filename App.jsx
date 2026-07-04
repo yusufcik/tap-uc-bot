@@ -19,10 +19,10 @@ import {
    to'ldiring. Bo'sh qoldirilsa, tegishli funksiya (adminga
    xabar, obunani tekshirish) shunchaki o'chirilgan holda ishlaydi.
    ============================================================ */
-const BOT_TOKEN = ""; // BotFather bergan token, masalan "123456:AA..."
-const BOT_USERNAME = "TapUcBot"; // botingiz username (@ belgisisiz)
-const ADMIN_CHAT_ID = ""; // sizning Telegram chat ID raqamingiz (masalan @userinfobot dan oling)
-const CHANNEL_USERNAME = "@your_channel"; // obuna bo'lish talab qilinadigan kanal
+const BOT_TOKEN = "8790946212:AAGDGFUHWaj_iFiwZ8xRIlTV-3t9qnLlbDE"; // BotFather bergan token, masalan "123456:AA..."
+const BOT_USERNAME = "Tapucrobot"; // botingiz username (@ belgisisiz)
+const ADMIN_CHAT_ID = "7060092076"; // sizning Telegram chat ID raqamingiz (masalan @userinfobot dan oling)
+const CHANNEL_USERNAME = "@tapuckanal"; // obuna bo'lish talab qilinadigan kanal
 
 /* MUHIM: BOT_TOKEN shu faylda saqlansa, ilovani ochgan har bir
    foydalanuvchi brauzerda uni ko'ra oladi va undan noto'g'ri
