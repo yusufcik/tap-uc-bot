@@ -17,10 +17,10 @@ import {
 /* ============================================================
    SOZLAMALAR
 ============================================================ */
-const BOT_TOKEN = "8790946212:AAGDGFUHWaj_iFiwZ8xRIlTV-3t9qnLlbDE"; // BotFather token: "123456:AA..."
-const BOT_USERNAME = "Tapucrobot"; // @ belgisisiz
-const ADMIN_CHAT_ID = "7060092076"; // admin telegram ID
-const CHANNEL_USERNAME = "@tapuckanal"; // default vazifa uchun kanal
+const BOT_TOKEN = "8790946212:AAGDGFUHWaj_iFiwZ8xRIlTV-3t9qnLlbDE"; // BotFather token
+const BOT_USERNAME = "TapucroBot"; // @sizsiz
+const ADMIN_CHAT_ID = "7060092076"; // admin telegram id
+const CHANNEL_USERNAME = "@tapuckanal"; // default kanal
 
 const DAILY_LIMIT = 200;
 const REFERRAL_BONUS = 50;
@@ -145,6 +145,22 @@ function Notice({ notice }) {
   );
 }
 
+function NavButton({ active, onClick, icon, label }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex-1 flex flex-col items-center justify-center py-2"
+      style={{
+        color: active ? C.orange : "#94A3B8",
+        fontWeight: active ? 800 : 700,
+      }}
+    >
+      {icon}
+      <span className="text-[11px] mt-1">{label}</span>
+    </button>
+  );
+}
+
 export default function TapUCApp() {
   const [state, setState] = useState(defaultState);
   const [loaded, setLoaded] = useState(false);
@@ -192,9 +208,7 @@ export default function TapUCApp() {
     if (tgUser?.id) {
       setMyId(String(tgUser.id));
       setMyName(
-        tgUser.username
-          ? `@${tgUser.username}`
-          : tgUser.first_name || "Foydalanuvchi"
+        tgUser.username ? `@${tgUser.username}` : tgUser.first_name || "Foydalanuvchi"
       );
       return;
     }
@@ -247,8 +261,7 @@ export default function TapUCApp() {
     setTasks(next);
     saveLS(TASKS_STORAGE_KEY, next);
   };
-
-  /* ---------- referral apply on first join ---------- */
+/* ---------- referral link orqali kirgan userga bonus ---------- */
   useEffect(() => {
     if (!loaded || !myId || state.refApplied) return;
 
@@ -259,12 +272,15 @@ export default function TapUCApp() {
       const refCode = startParam.slice(4);
 
       if (refCode && refCode !== myId) {
-        const refs = loadLS(REF_STORAGE_KEY, {});
-        const list = Array.isArray(refs[refCode]) ? refs[refCode] : [];
+        const allRefs = loadLS(REF_STORAGE_KEY, {});
 
-        if (!list.includes(myId)) {
-          refs[refCode] = [...list, myId];
-          saveLS(REF_STORAGE_KEY, refs);
+        if (!Array.isArray(allRefs[refCode])) {
+          allRefs[refCode] = [];
+        }
+
+        if (!allRefs[refCode].includes(myId)) {
+          allRefs[refCode].push(myId);
+          saveLS(REF_STORAGE_KEY, allRefs);
 
           setState((s) => ({
             ...s,
@@ -274,19 +290,21 @@ export default function TapUCApp() {
 
           showNotice(
             "success",
-            `Xush kelibsiz! +${SIGNUP_BONUS} ball qo'shildi`
+            `Xush kelibsiz! +${SIGNUP_BONUS} ball bonus qo'shildi`
           );
+        } else {
+          setState((s) => ({ ...s, refApplied: true }));
         }
       }
     }
   }, [loaded, myId, state.refApplied]);
 
-  /* ---------- claim referral earnings ---------- */
+  /* ---------- referral earnings ---------- */
   const checkReferralEarnings = useCallback(() => {
     if (!myId) return;
 
-    const refs = loadLS(REF_STORAGE_KEY, {});
-    const list = Array.isArray(refs[myId]) ? refs[myId] : [];
+    const allRefs = loadLS(REF_STORAGE_KEY, {});
+    const list = Array.isArray(allRefs[myId]) ? allRefs[myId] : [];
 
     setReferralCount(list.length);
 
@@ -325,15 +343,14 @@ export default function TapUCApp() {
     }));
   };
 
-  /* ---------- telegram notify admin ---------- */
+  /* ---------- adminga xabar ---------- */
   const notifyAdmin = async (request) => {
-    if (!BOT_TOKEN || BOT_TOKEN === "TOKEN_HERE" || !ADMIN_CHAT_ID) return;
+    if (!BOT_TOKEN || !ADMIN_CHAT_ID) return;
 
     try {
       const text =
         `Yangi yechish so'rovi\n\n` +
         `Foydalanuvchi: ${myName || myId}\n` +
-        `ID: ${myId}\n` +
         `PUBG ID: ${request.ucId}\n` +
         `Ball: ${request.ball}\n` +
         `UC: ${request.uc}\n` +
@@ -342,7 +359,10 @@ export default function TapUCApp() {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, text }),
+        body: JSON.stringify({
+          chat_id: ADMIN_CHAT_ID,
+          text,
+        }),
       });
     } catch (e) {
       console.error("Adminga xabar yuborilmadi:", e);
@@ -386,9 +406,9 @@ export default function TapUCApp() {
     }));
 
     notifyAdmin(request);
-
     setAmount("");
     setUcId("");
+
     showNotice("success", `So'rov yuborildi: ${val} ball → ${uc} UC`);
   };
 
@@ -396,21 +416,12 @@ export default function TapUCApp() {
   const completeTask = async (task) => {
     if (state.completedTasks.includes(task.id)) return;
 
-    if (
-      BOT_TOKEN &&
-      BOT_TOKEN !== "TOKEN_HERE" &&
-      myId &&
-      !String(myId).startsWith("guest_")
-    ) {
+    if (BOT_TOKEN && myId && !String(myId).startsWith("guest_")) {
       try {
         const channel = task.channel || CHANNEL_USERNAME;
-
         const res = await fetch(
-          `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${encodeURIComponent(
-            channel
-          )}&user_id=${myId}`
+          `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${channel}&user_id=${myId}`
         );
-
         const data = await res.json();
         const status = data?.result?.status;
 
@@ -421,7 +432,8 @@ export default function TapUCApp() {
           );
           return;
         }
-      } catch {
+      } catch (e) {
+        console.error(e);
         showNotice("error", "Tekshirishda xatolik, keyinroq urinib ko'ring");
         return;
       }
@@ -433,20 +445,19 @@ export default function TapUCApp() {
       completedTasks: [...s.completedTasks, task.id],
     }));
 
-    showNotice("success", `+${task.bonus} ball qo'shildi!`);
+    showNotice("success", `+${task.bonus} ball qo'shildi`);
   };
 
-  /* ---------- referral copy ---------- */
+  /* ---------- referral link copy ---------- */
   const copyReferralLink = async () => {
-    if (!myId) return;
-
     const link = `https://t.me/${BOT_USERNAME}?start=ref_${myId}`;
+
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      showNotice("error", "Nusxalab bo'lmadi, qo'lda ko'chiring");
+      showNotice("error", "Nusxalab bo'lmadi");
     }
   };
 
@@ -475,16 +486,22 @@ export default function TapUCApp() {
     };
 
     saveTasks([...tasks, task]);
-    setNewTask({ title: "", channelUsername: "", bonus: "" });
+
+    setNewTask({
+      title: "",
+      channelUsername: "",
+      bonus: "",
+    });
+
     showNotice("success", "Yangi vazifa qo'shildi");
   };
 
   const removeTask = (id) => {
-    saveTasks(tasks.filter((t) => t.id !== id));
+    const next = tasks.filter((t) => t.id !== id);
+    saveTasks(next);
     showNotice("success", "Vazifa o'chirildi");
   };
 
-  /* ---------- derived ---------- */
   const tapProgress = Math.min(100, (state.dailyTaps / DAILY_LIMIT) * 100);
   const liveUC = amount ? estimateUC(parseInt(amount, 10) || 0) : 0;
   const referralLink = myId
@@ -499,7 +516,7 @@ export default function TapUCApp() {
     fontWeight: 600,
     width: "100%",
     outline: "none",
-    marginTop: 8,
+    marginTop: 4,
     backgroundColor: "#fff",
   };
 
@@ -512,18 +529,18 @@ export default function TapUCApp() {
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center py-6 px-3"
+      className="min-h-screen w-full flex items-center justify-center py-6 px-3"
       style={{ backgroundColor: C.bg }}
     >
       <div
-        className="w-full max-w-sm overflow-hidden pb-4"
+        className="w-full max-w-sm overflow-hidden"
         style={{
           backgroundColor: C.bg,
           borderRadius: 28,
           boxShadow: "0 10px 40px rgba(0,0,0,0.12)",
         }}
       >
-        {/* header */}
+        {/* Header */}
         <div
           className="px-4 py-3 flex items-center gap-3 border-b"
           style={{ backgroundColor: C.card, borderColor: "#F1F5F9" }}
@@ -543,58 +560,32 @@ export default function TapUCApp() {
             <span>BOT</span>
           </div>
 
-          <div className="flex-1 min-w-0">
+          <div className="flex-1">
             <div
-              className="text-base leading-none truncate"
+              className="text-base leading-none"
               style={{ color: C.navy, fontWeight: 800 }}
             >
               PUBG UC BOT
             </div>
             <div className="text-xs mt-1" style={{ color: "#94A3B8" }}>
-              {myName || "Foydalanuvchi"}
+              UC yig'ing va yeching
             </div>
           </div>
 
           <div
             className="text-sm px-4 py-1.5 whitespace-nowrap"
             style={{
-              background: gradient,
-              color: "#fff",
-              fontWeight: 800,
-              borderRadius: 999,
-              boxShadow: orangeShadow,
-            }}
-          >
-            {state.balance} ball
-          </div>
-        </div>
-
-        {notice && (
-          <div className="p-2 px-4">
-            <Notice notice={notice} />
-          </div>
-        )}
-
-        {/* content */}
-        <div className="px-4 pt-2 pb-24" style={{ minHeight: 500 }}>
-          {/* HOME */}
-          {tab === "home" && (
+{tab === "home" && (
             <>
               <div className="py-5 text-center mb-6" style={cardStyle}>
                 <div className="text-sm font-medium" style={{ color: "#94A3B8" }}>
                   Umumiy balans
                 </div>
                 <div className="mt-1 flex items-center justify-center gap-2">
-                  <span
-                    className="text-4xl"
-                    style={{ color: C.navy, fontWeight: 900 }}
-                  >
+                  <span className="text-4xl" style={{ color: C.navy, fontWeight: 900 }}>
                     {state.balance}
                   </span>
-                  <span
-                    className="text-xl"
-                    style={{ color: C.orange, fontWeight: 800 }}
-                  >
+                  <span className="text-xl" style={{ color: C.orange, fontWeight: 800 }}>
                     ball
                   </span>
                 </div>
@@ -604,7 +595,7 @@ export default function TapUCApp() {
                 <button
                   onClick={handleTap}
                   disabled={state.dailyTaps >= DAILY_LIMIT}
-                  className="w-56 h-56 rounded-full flex items-center justify-center transition-transform duration-100"
+                  className="w-64 h-64 rounded-full flex items-center justify-center transition-transform duration-100"
                   style={{
                     background: C.navy,
                     border: `10px solid ${C.orange}`,
@@ -614,16 +605,10 @@ export default function TapUCApp() {
                   }}
                 >
                   <div className="text-center leading-none select-none">
-                    <div
-                      className="text-3xl tracking-wide"
-                      style={{ color: C.orange, fontWeight: 900 }}
-                    >
-                      TAP
+                    <div className="text-4xl tracking-wide" style={{ color: C.orange, fontWeight: 900 }}>
+                      Tap
                     </div>
-                    <div
-                      className="text-3xl tracking-wide"
-                      style={{ color: "#fff", fontWeight: 900 }}
-                    >
+                    <div className="text-4xl tracking-wide" style={{ color: "#fff", fontWeight: 900 }}>
                       UC
                     </div>
                   </div>
@@ -653,82 +638,93 @@ export default function TapUCApp() {
                     style={{ width: `${tapProgress}%`, background: gradient }}
                   />
                 </div>
+
+                <div className="text-xs mt-2" style={{ color: "#94A3B8" }}>
+                  Kunlik maksimal limit: {DAILY_LIMIT} tap
+                </div>
               </div>
 
-              <div className="p-4 mt-4" style={cardStyle}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Gift size={18} color={C.orange} />
-                  <div style={{ color: C.navy, fontWeight: 800 }}>Bonuslar</div>
-                </div>
-                <div className="text-sm text-gray-500">
-                  Referal orqali kirgan har bir do'st uchun{" "}
-                  <span className="font-bold text-black">+{REFERRAL_BONUS}</span> ball.
-                </div>
+              <div className="mt-4">
+                <Notice notice={notice} />
               </div>
             </>
           )}
-          {/* REFERAL */}
+
           {tab === "referal" && (
-            <div className="space-y-4">
-              <div className="p-4 text-center" style={cardStyle}>
-                <Users className="mx-auto mb-2" size={32} color={C.orange} />
-                <div className="text-sm font-bold" style={{ color: C.navy }}>
-                  Do'stlarni taklif qiling
+            <div className="mt-2 space-y-4">
+              <div className="p-6 text-center" style={cardStyle}>
+                <Users className="mx-auto mb-2" size={36} color={C.orange} />
+                <div className="mb-1" style={{ color: C.navy, fontWeight: 800 }}>
+                  Do'stlaringizni taklif qiling
                 </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  Har bir do'st uchun +{REFERRAL_BONUS} ball, kirganga +{SIGNUP_BONUS} ball
+                <div className="text-sm" style={{ color: "#94A3B8" }}>
+                  Har bir taklif qilingan do'stingiz uchun{" "}
+                  <span style={{ color: C.orangeDark, fontWeight: 700 }}>
+                    +{REFERRAL_BONUS} ball
+                  </span>{" "}
+                  oling
                 </div>
-              </div>
-
-              <div className="p-4" style={cardStyle}>
-                <div className="text-xs font-bold text-gray-400 uppercase">
-                  Sizning havolangiz
-                </div>
-                <div className="text-xs break-all bg-gray-50 p-2.5 rounded-xl mt-2 border select-all">
-                  {referralLink || "Yuklanmoqda..."}
-                </div>
-
-                <button
-                  onClick={copyReferralLink}
-                  className="w-full mt-3 py-2 text-sm font-bold rounded-xl text-white flex items-center justify-center gap-2"
-                  style={{ background: gradient }}
-                >
-                  <Copy size={16} />
-                  {copied ? "Nusxalandi!" : "Havolani nusxalash"}
-                </button>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 text-center" style={cardStyle}>
-                  <div className="text-xs text-gray-400 font-bold uppercase">
+                  <div className="text-xs font-semibold uppercase" style={{ color: "#94A3B8" }}>
                     Takliflar
                   </div>
-                  <div
-                    className="text-2xl mt-1"
-                    style={{ color: C.navy, fontWeight: 900 }}
-                  >
+                  <div className="text-2xl mt-1" style={{ color: C.navy, fontWeight: 900 }}>
                     {referralCount}
                   </div>
                 </div>
 
                 <div className="p-4 text-center" style={cardStyle}>
-                  <div className="text-xs text-gray-400 font-bold uppercase">
-                    Bonus
+                  <div className="text-xs font-semibold uppercase" style={{ color: "#94A3B8" }}>
+                    Ishlangan bonus
                   </div>
-                  <div
-                    className="text-2xl mt-1"
-                    style={{ color: C.orange, fontWeight: 900 }}
-                  >
+                  <div className="text-2xl mt-1" style={{ color: C.orange, fontWeight: 900 }}>
                     {referralCount * REFERRAL_BONUS}
                   </div>
                 </div>
               </div>
+
+              <div className="p-4" style={cardStyle}>
+                <div
+                  className="text-xs uppercase tracking-wide mb-2"
+                  style={{ color: "#94A3B8", fontWeight: 700 }}
+                >
+                  Sizning havolangiz
+                </div>
+
+                <div
+                  className="text-xs break-all mb-3 px-3 py-2.5 rounded-xl"
+                  style={{ backgroundColor: "#F8FAFC", color: "#64748B" }}
+                >
+                  {referralLink || "Yuklanmoqda..."}
+                </div>
+
+                <button
+                  onClick={copyReferralLink}
+                  disabled={!myId}
+                  className="w-full flex items-center justify-center gap-2 py-3 transition-transform"
+                  style={{
+                    background: gradient,
+                    color: "#fff",
+                    fontWeight: 800,
+                    borderRadius: 12,
+                    boxShadow: orangeShadow,
+                    opacity: !myId ? 0.6 : 1,
+                  }}
+                >
+                  {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+                  {copied ? "Nusxalandi!" : "Havolani nusxalash"}
+                </button>
+              </div>
+
+              <Notice notice={notice} />
             </div>
           )}
 
-          {/* TASKS */}
           {tab === "tasks" && (
-            <div className="space-y-3">
+            <div className="mt-2 space-y-3">
               {tasks.map((task) => {
                 const done = state.completedTasks.includes(task.id);
 
@@ -757,7 +753,10 @@ export default function TapUCApp() {
                     </div>
 
                     {done ? (
-                      <span className="flex items-center gap-1 text-xs font-bold" style={{ color: "#10B981" }}>
+                      <span
+                        className="flex items-center gap-1 text-xs font-bold"
+                        style={{ color: "#10B981" }}
+                      >
                         <CheckCircle2 size={16} /> Bajarildi
                       </span>
                     ) : (
@@ -777,6 +776,7 @@ export default function TapUCApp() {
                         >
                           O'tish
                         </a>
+
                         <button
                           onClick={() => completeTask(task)}
                           className="px-2.5 py-1.5"
@@ -795,12 +795,13 @@ export default function TapUCApp() {
                   </div>
                 );
               })}
+
+              <Notice notice={notice} />
             </div>
           )}
 
-          {/* WITHDRAW */}
           {tab === "withdraw" && (
-            <div className="space-y-4">
+            <div className="mt-2 space-y-4">
               <div className="p-4 text-center" style={cardStyle}>
                 <div className="text-sm" style={{ color: "#94A3B8" }}>
                   Mavjud balans
@@ -828,7 +829,10 @@ export default function TapUCApp() {
 
               <div className="p-4 space-y-3" style={cardStyle}>
                 <div>
-                  <label className="text-xs uppercase tracking-wide" style={{ color: "#94A3B8", fontWeight: 700 }}>
+                  <label
+                    className="text-xs uppercase tracking-wide"
+                    style={{ color: "#94A3B8", fontWeight: 700 }}
+                  >
                     PUBG ID raqamingiz
                   </label>
                   <input
@@ -841,7 +845,10 @@ export default function TapUCApp() {
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase tracking-wide" style={{ color: "#94A3B8", fontWeight: 700 }}>
+                  <label
+                    className="text-xs uppercase tracking-wide"
+                    style={{ color: "#94A3B8", fontWeight: 700 }}
+                  >
                     Necha ball sarflamoqchisiz
                   </label>
                   <input
@@ -851,15 +858,16 @@ export default function TapUCApp() {
                     placeholder="Masalan: 1000"
                     style={inputStyle}
                   />
+
                   {amount ? (
                     <div className="text-xs mt-1.5" style={{ color: "#94A3B8" }}>
                       Taxminiy:{" "}
-                      <span style={{ color: C.orangeDark, fontWeight: 700 }}>
-                        {liveUC} UC
-                      </span>
+                      <span style={{ color: C.orangeDark, fontWeight: 700 }}>{liveUC} UC</span>
                     </div>
                   ) : null}
                 </div>
+
+                <Notice notice={notice} />
 
                 <button
                   onClick={submitWithdraw}
@@ -882,6 +890,7 @@ export default function TapUCApp() {
                   <div className="text-sm mb-3" style={{ color: C.navy, fontWeight: 700 }}>
                     So'rovlar tarixi
                   </div>
+
                   <div className="space-y-2 max-h-52 overflow-y-auto">
                     {state.withdrawals.map((w) => (
                       <div
@@ -897,6 +906,7 @@ export default function TapUCApp() {
                             ID: {w.ucId}
                           </div>
                         </div>
+
                         <div
                           className="flex items-center gap-1 text-xs font-bold"
                           style={{ color: "#F59E0B" }}
@@ -911,10 +921,8 @@ export default function TapUCApp() {
               )}
             </div>
           )}
-
-          {/* ADMIN */}
-          {tab === "admin" && isAdmin && (
-            <div className="space-y-4">
+{tab === "admin" && isAdmin && (
+            <div className="mt-2 space-y-4">
               <div className="p-4" style={cardStyle}>
                 <div className="mb-3 flex items-center gap-2" style={{ color: C.navy, fontWeight: 800 }}>
                   <Settings size={18} color={C.orange} />
@@ -923,30 +931,31 @@ export default function TapUCApp() {
 
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs uppercase tracking-wide" style={{ color: "#94A3B8", fontWeight: 700 }}>
+                    <label
+                      className="text-xs uppercase tracking-wide"
+                      style={{ color: "#94A3B8", fontWeight: 700 }}
+                    >
                       Sarlavha (ixtiyoriy)
                     </label>
                     <input
                       value={newTask.title}
-                      onChange={(e) =>
-                        setNewTask((t) => ({ ...t, title: e.target.value }))
-                      }
+                      onChange={(e) => setNewTask((t) => ({ ...t, title: e.target.value }))}
                       placeholder="Masalan: Yangiliklar kanaliga obuna bo'ling"
                       style={inputStyle}
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs uppercase tracking-wide" style={{ color: "#94A3B8", fontWeight: 700 }}>
+                    <label
+                      className="text-xs uppercase tracking-wide"
+                      style={{ color: "#94A3B8", fontWeight: 700 }}
+                    >
                       Kanal username
                     </label>
                     <input
                       value={newTask.channelUsername}
                       onChange={(e) =>
-                        setNewTask((t) => ({
-                          ...t,
-                          channelUsername: e.target.value,
-                        }))
+                        setNewTask((t) => ({ ...t, channelUsername: e.target.value }))
                       }
                       placeholder="Masalan: mening_kanalim"
                       style={inputStyle}
@@ -954,7 +963,10 @@ export default function TapUCApp() {
                   </div>
 
                   <div>
-                    <label className="text-xs uppercase tracking-wide" style={{ color: "#94A3B8", fontWeight: 700 }}>
+                    <label
+                      className="text-xs uppercase tracking-wide"
+                      style={{ color: "#94A3B8", fontWeight: 700 }}
+                    >
                       Necha ball beriladi
                     </label>
                     <input
@@ -970,6 +982,8 @@ export default function TapUCApp() {
                       style={inputStyle}
                     />
                   </div>
+
+                  <Notice notice={notice} />
 
                   <button
                     onClick={addChannelTask}
@@ -1049,12 +1063,10 @@ export default function TapUCApp() {
                 setNotice(null);
               }}
               className="flex flex-col items-center gap-1 px-3 py-1"
+              style={{ background: "transparent", border: "none" }}
             >
               <Icon size={22} color={tab === key ? C.orange : "#B5BCCB"} />
-              <span
-                className="text-xs font-semibold"
-                style={{ color: tab === key ? C.orange : "#94A3B8" }}
-              >
+              <span className="text-xs font-semibold" style={{ color: tab === key ? C.orange : "#94A3B8" }}>
                 {label}
               </span>
             </button>
