@@ -32,13 +32,15 @@ const CHANNEL_USERNAME = "@tapuckanal"; // obuna bo'lish talab qilinadigan kanal
 
 const DAILY_LIMIT = 200;
 const REFERRAL_BONUS = 50; // taklif qilingan har bir do'st uchun
-const SIGNUP_BONUS = 20; // taklif havolasi orqali kirgan yangi foydalanuvchiga
-const TASK_BONUS = 30;
+const SIGNUP_BONUS = 50; // taklif havolasi orqali kirgan yangi foydalanuvchiga
+const TASK_BONUS = 50;
 const STORAGE_KEY = "tapuc:state";
 
 const TIERS = [
-  { ball: 1000, uc: 60 },
-  { ball: 3000, uc: 360 },
+  { ball: 1000, uc: 60 },  
+    { ball: 2000, uc: 180 },
+  { ball: 3000, uc: 360 },  
+    { ball: 5000, uc: 480 },
 ];
 
 const DEFAULT_TASKS = [
@@ -886,4 +888,5 @@ export default function TapUCApp() {
       </div>
     </div>
   );
-}
+                    }
+                
