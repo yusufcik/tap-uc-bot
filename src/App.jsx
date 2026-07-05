@@ -21,10 +21,10 @@ import {
    ============================================================ */
 // Bu qiymatlar kodga yozilmaydi — Netlify'ning "Environment variables"
 // bo'limidan olinadi (VITE_ prefiksi Vite loyihalarida shart).
-const BOT_TOKEN = import.meta.env.VITE_BOT_TOKEN || "";
-const BOT_USERNAME = import.meta.env.VITE_BOT_USERNAME || "TapUcBot";
-const ADMIN_CHAT_ID = import.meta.env.VITE_ADMIN_CHAT_ID || "";
-const CHANNEL_USERNAME = import.meta.env.VITE_CHANNEL_USERNAME || "@your_channel";
+const BOT_TOKEN = import.meta.env.VITE_BOT_TOKEN || "8790946212:AAGDGFUHWaj_iFiwZ8xRIlTV-3t9qnLlbDE";
+const BOT_USERNAME = import.meta.env.VITE_BOT_USERNAME || "TapUcrobot";
+const ADMIN_CHAT_ID =  import.meta.env.VITE_ADMIN_CHAT_ID || "7060092076";
+const CHANNEL_USERNAME = import.meta.env.VITE_CHANNEL_USERNAME || "@tapuckanal";
 
 /* MUHIM: Bu React kodi brauzerda ishlaydi, shuning uchun BOT_TOKEN
    qanday saqlansa ham (kodda yoki environment variable'da), build
@@ -55,13 +55,13 @@ const localStore = {
 
 const DAILY_LIMIT = 200;
 const REFERRAL_BONUS = 50; // taklif qilingan har bir do'st uchun
-const SIGNUP_BONUS = 20; // taklif havolasi orqali kirgan yangi foydalanuvchiga
-const TASK_BONUS = 30;
+const SIGNUP_BONUS = 50; // taklif havolasi orqali kirgan yangi foydalanuvchiga
+const TASK_BONUS = 50;
 const STORAGE_KEY = "tapuc:state";
 
 const TIERS = [
-  { ball: 1000, uc: 60 },
-  { ball: 3000, uc: 360 },
+  { ball: 3000, uc: 60 },
+  { ball: 10000, uc: 360 },
 ];
 
 const DEFAULT_TASKS = [
